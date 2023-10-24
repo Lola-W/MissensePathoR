@@ -10,7 +10,6 @@ use_package("dplyr")
 usethis::use_package("vcfR")
 usethis::use_package("data.table")
 
-
 getAlphaMissenseData <- function(path, chrInCHROM = TRUE){
   #path = "data/AlphaMissense/AlphaMissense_hg38.tsv"
   AlphaMissense_data <- data.table::fread(path, sep = "\t")
