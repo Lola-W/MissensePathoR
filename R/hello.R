@@ -13,16 +13,16 @@
 #   Check Package:             'Cmd + Shift + E'
 #   Test Package:              'Cmd + Shift + T'
 
-hello <- function() {
-  print("Hello, world!")
-}
-
-devtools::load_all()
-
-
-install.packages("usethis")
-library("usethis")
-usethis::use_mit_license("Jiaming Weng")
-
-usethis::use_readme_rmd()
-devtools::build_readme()
+# hello <- function() {
+#   print("Hello, world!")
+# }
+#
+# devtools::load_all()
+#
+#
+# install.packages("usethis")
+# library("usethis")
+# usethis::use_mit_license("Jiaming Weng")
+#
+# usethis::use_readme_rmd()
+# devtools::build_readme()
