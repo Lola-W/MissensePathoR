@@ -119,7 +119,7 @@ readVCF <- function(vcf_df) {
     # 2 possible formats of vcf files, adjust CHROM values if needed
     vcf_data[, CHROM := ifelse(grepl("^chr", CHROM), CHROM, paste0("chr", CHROM))]
     vcf_data[, POS := as.integer(POS)]
-    vcf_data[, `:=`(group = unlist(group))]
+    vcf_data[, `:=`(group = unlist(group))] # fixd type
     vcf_data[, sample_name := sample]
 
     return(vcf_data)

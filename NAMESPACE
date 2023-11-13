@@ -2,6 +2,7 @@
 
 export(classSummary)
 export(createVCFDataFrame)
+export(getAlphaMissenseData)
 export(predictPathoScore)
 export(readAlphaMissenseData)
 export(readVCF)

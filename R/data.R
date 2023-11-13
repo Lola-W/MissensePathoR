@@ -13,7 +13,7 @@
 #' temporal response to proteostatic stress. Elife. 2018;7:e39054.
 #' doi: 10.7554/eLife.39054.
 #'
-#' @format A data table with 9 columns:
+#' @format A data table with columns:
 #' \describe{
 #'   \item{CHROM}{Chromosome number where the variant is located.}
 #'   \item{POS}{The position of the variant on the chromosome.}
@@ -93,6 +93,5 @@
 #' data(predScoreSample)
 #' head(predScoreSample)
 "predScoreSample"
-
 
 

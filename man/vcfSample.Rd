@@ -5,7 +5,7 @@
 \alias{vcfSample}
 \title{VCF Sample Data from the MissensePathoR Package}
 \format{
-A data table with 9 columns:
+A data table with columns:
 \describe{
   \item{CHROM}{Chromosome number where the variant is located.}
   \item{POS}{The position of the variant on the chromosome.}
