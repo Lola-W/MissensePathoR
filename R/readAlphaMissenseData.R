@@ -1,4 +1,4 @@
-#' Get AlphaMissense Data
+#' Read AlphaMissense Data
 #'
 #' Retrieves AlphaMissense data for analysis. If no path is provided,
 #' a demo prediction dataset from AlphaMissense is loaded. For the full dataset,
@@ -10,17 +10,16 @@
 #' @return A data.table containing the AlphaMissense data.
 #' @importFrom data.table fread
 #' @importFrom utils data
-#' @importFrom utils warning
 #' @examples
 #' \dontrun{
 #'  # Load the demo dataset
-#'  demo_data <- getAlphaMissenseData()
+#'  demo_data <- readAlphaMissenseData()
 #'
 #'  # Load the full dataset (specify the correct path to the downloaded file)
-#'  # full_data <- getAlphaMissenseData("path/to/AlphaMissense_hg38.tsv.gz")
+#'  # full_data <- readAlphaMissenseData("path/to/AlphaMissense_hg38.tsv.gz")
 #' }
 #' @export
-getAlphaMissenseData <- function(path = NULL){
+readAlphaMissenseData <- function(path = NULL){
   if (is.null(path)) {
     warning("You have loaded a demo prediction dataset from AlphaMissense. ",
             "If you want the full dataset please download it from ",

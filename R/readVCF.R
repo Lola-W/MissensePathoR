@@ -48,6 +48,7 @@ createVCFDataFrame <- function(base_dir, vcf_pattern, sample_pattern) {
 #' @param vcf_df DataFrame with columns 'group', 'sample', 'file_name'.
 #'
 #' @return A data.table combining all VCF data.
+#' @import vcfR
 #' @export
 #'
 #' @examples
@@ -60,7 +61,8 @@ createVCFDataFrame <- function(base_dir, vcf_pattern, sample_pattern) {
 readVCF <- function(vcf_df) {
   # Validate input DataFrame
   if (!all(c("group", "sample", "file_name") %in% names(vcf_df))) {
-    stop("Input DataFrame must contain columns: 'group', 'sample', 'file_name'.")
+    stop("Input DataFrame must contain columns: 'group', 'sample', 'file_name'.
+         Please consider using createVCFDataFrame() to generate input with proper format.")
   }
 
   # Process each VCF file
@@ -83,6 +85,14 @@ readVCF <- function(vcf_df) {
     }, error = function(e) {
       stop("Error processing VCF data for file: ", file_path, "\n", e$message)
     })
+
+    # Check for SNPs and provide a user-friendly warning if non-SNPs are detected
+    if (any(nchar(vcf_data$ALT) > 1)) {
+      warning("Your VCF file contains variants that are not single nucleotide polymorphisms (SNPs). ",
+              "Non-SNPs have been discarded. For SNP analysis, please extract SNPs first using: ",
+              "`bcftools view -v snps yourfile.vcf > snp.vcf`.")
+      vcf_data <- vcf_data[nchar(vcf_data$ALT) == 1]
+    }
 
     # 2 possible formats of vcf files, adjust CHROM values if needed
     vcf_data[, CHROM := ifelse(grepl("^chr", CHROM), CHROM, paste0("chr", CHROM))]

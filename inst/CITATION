@@ -1,11 +1,13 @@
-bibentry(
-  bibtype  = "Article",
-  title    = ,
-  author   = ,
-  journal  = ,
-  year     = ,
-  volume   = ,
-  number   = ,
-  pages    = ,
-  doi      =
+citHeader("To cite MissensePathoR in publications use:")
+
+citEntry(entry = "Unpublished",
+  title        = "MissensePathoR: An R Package for Predicting Pathogenicity of Missense Variants with AlphaMissense",
+  author       = "Jiaming Weng",
+  note         = "Unpublished",
+  year         = "2023",
+
+  textVersion  =
+  paste("Weng, J. (2023) MissensePathoR: An R Package for Predicting",
+                       "Pathogenicity of Missense Variants with AlphaMissense. Unpublished.",
+                       "URL https://github.com/JiamingWeng/MissensePathoR."),
 )
