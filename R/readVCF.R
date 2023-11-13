@@ -11,8 +11,10 @@
 #' @export
 #'
 #' @examples
-#' example_dir <- system.file("extdata", package = "MissensePathoR")
-#' vcf_df <- createVCFDataFrame(example_dir, "*.vcf", "([^/]+)/([^/]+)/(.*\\.vcf)")
+#' vcf_files_path <- system.file("extdata", package = "MissensePathoR")
+#' vcf_df <- createVCFDataFrame(vcf_files_path,
+#'                              "*.vcf",
+#'                              ".*/([0-9]+h)_(Rep[0-9]+)\\.vcf$")
 #'
 createVCFDataFrame <- function(base_dir, vcf_pattern, sample_pattern) {
   # List all VCF files recursively
@@ -49,12 +51,14 @@ createVCFDataFrame <- function(base_dir, vcf_pattern, sample_pattern) {
 #' @export
 #'
 #' @examples
-#' example_dir <- system.file("extdata", package = "MissensePathoR")
-#' vcf_df <- createVCFDataFrame(example_dir, "*.vcf", "([^/]+)/([^/]+)/(.*\\.vcf)")
-#' combined_vcf <- readVCF(vcf_df)
+#' vcf_files_path <- system.file("extdata", package = "MissensePathoR")
+#' vcf_df <- createVCFDataFrame(vcf_files_path,
+#'                              "*.vcf",
+#'                              ".*/([0-9]+h)_(Rep[0-9]+)\\.vcf$")
+#' vcf_data <- readVCF(vcf_df)
 #'
-readVCF <- function(base_dir, vcf_pattern = "*merged_variants.vcf") {
-
+readVCF <- function(vcf_df) {
+  # Validate input DataFrame
   if (!all(c("group", "sample", "file_name") %in% names(vcf_df))) {
     stop("Input DataFrame must contain columns: 'group', 'sample', 'file_name'.")
   }
@@ -64,12 +68,14 @@ readVCF <- function(base_dir, vcf_pattern = "*merged_variants.vcf") {
     row <- vcf_df[i, ]
     file_path <- row$file_name
     group <- row$group
+    sample <- row$sample
 
     # Read VCF
     vcf <- tryCatch({
-      read.vcfR(file_path, verbose = FALSE)
+      vcfR::read.vcfR(as.character(file_path), verbose = FALSE)
     }, error = function(e) {
-      stop("Error reading VCF file: ", file_path, "\n", e$message)
+      stop("Error reading VCF file: ", file_path, "\n",
+           "Check the integrity of your input file. \n", e$message)
     })
 
     vcf_data <- tryCatch({
@@ -78,8 +84,11 @@ readVCF <- function(base_dir, vcf_pattern = "*merged_variants.vcf") {
       stop("Error processing VCF data for file: ", file_path, "\n", e$message)
     })
 
+    # 2 possible formats of vcf files, adjust CHROM values if needed
+    vcf_data[, CHROM := ifelse(grepl("^chr", CHROM), CHROM, paste0("chr", CHROM))]
     vcf_data[, POS := as.integer(POS)]
     vcf_data[, `:=`(group = group)]
+    vcf_data[, sample_name := sample]
 
     return(vcf_data)
   })
