@@ -20,7 +20,7 @@
 #' rows and the number of rows from `vcf_data` that were not included in the merge due to
 #' missing predictions.
 #'
-#' @importFrom data.table data.table
+#' @import data.table
 #' @export
 #' @examples
 #' \dontrun{

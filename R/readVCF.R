@@ -5,7 +5,8 @@
 #'
 #' @param base_dir Directory containing VCF files.
 #' @param vcf_pattern Regular expression to match VCF files.
-#' @param sample_pattern Regular expression to extract group and sample names from file paths.
+#' @param group_pattern Regular expression to extract group names from file paths.
+#' @param sample_pattern Regular expression to extract sample names from file paths.
 #'
 #' @return DataFrame with columns: group, sample, file_name.
 #' @export
@@ -14,30 +15,49 @@
 #' vcf_files_path <- system.file("extdata", package = "MissensePathoR")
 #' vcf_df <- createVCFDataFrame(vcf_files_path,
 #'                              "*.vcf",
-#'                              ".*/([0-9]+h)_(Rep[0-9]+)\\.vcf$")
+#'                              "([0-9]+)h",
+#'                              "Rep([0-9]+)")
 #'
-createVCFDataFrame <- function(base_dir, vcf_pattern, sample_pattern) {
-  # List all VCF files recursively
-  vcf_files <- list.files(base_dir,
-                          pattern = vcf_pattern,
-                          recursive = TRUE,
-                          full.names = TRUE)
-
-  if (!all(file.exists(vcf_files))) {
-    stop("One or more VCF files do not exist.")
+createVCFDataFrame <- function(base_dir, vcf_pattern, group_pattern, sample_pattern) {
+  # Ensure the base directory exists
+  if (!dir.exists(base_dir)) {
+    stop("Base directory does not exist: ", base_dir)
   }
 
-  # Extract group and sample names based on sample_pattern
-  extract_info <- function(file_path) {
-    # Modify this regex based on the expected directory structure
-    matches <- stringr::str_match(file_path, sample_pattern)
-    list(group = matches[, 2], sample = matches[, 3], file_name = file_path)
+  # List all files in base directory
+  all_files <- list.files(base_dir, pattern = vcf_pattern, full.names = TRUE)
+
+  # Initialize vectors to store group, sample, and file names
+  groups <- vector("character", length(all_files))
+  samples <- vector("character", length(all_files))
+  file_names <- vector("character", length(all_files))
+
+  # Iterate over files and extract group and sample names
+  for (i in seq_along(all_files)) {
+    file_path <- all_files[i]
+    file_names[i] <- file_path
+
+    # Extract group name
+    group_match <- regexpr(group_pattern, file_path)
+    if (group_match != -1) {
+      groups[i] <- regmatches(file_path, group_match)[1]
+    } else {
+      groups[i] <- NA  # Assign NA if no match found
+    }
+
+    # Extract sample name
+    sample_match <- regexpr(sample_pattern, file_path)
+    if (sample_match != -1) {
+      samples[i] <- regmatches(file_path, sample_match)[1]
+    } else {
+      samples[i] <- NA  # Assign NA if no match found
+    }
   }
 
-  # Apply extract_info to each file and create a data frame
-  info_list <- lapply(vcf_files, extract_info)
-  df <- do.call(rbind, info_list)
-  return(data.frame(df, stringsAsFactors = FALSE))
+  # Create a DataFrame
+  result_df <- data.frame(group = groups, sample = samples, file_name = file_names, stringsAsFactors = FALSE)
+
+  return(result_df)
 }
 
 #' Read VCF Files into a Data Table
@@ -49,13 +69,15 @@ createVCFDataFrame <- function(base_dir, vcf_pattern, sample_pattern) {
 #'
 #' @return A data.table combining all VCF data.
 #' @import vcfR
+#' @import data.table
 #' @export
 #'
 #' @examples
 #' vcf_files_path <- system.file("extdata", package = "MissensePathoR")
 #' vcf_df <- createVCFDataFrame(vcf_files_path,
 #'                              "*.vcf",
-#'                              ".*/([0-9]+h)_(Rep[0-9]+)\\.vcf$")
+#'                              "([0-9]+)h",
+#'                              "Rep([0-9]+)")
 #' vcf_data <- readVCF(vcf_df)
 #'
 readVCF <- function(vcf_df) {
@@ -81,7 +103,7 @@ readVCF <- function(vcf_df) {
     })
 
     vcf_data <- tryCatch({
-      setDT(data.frame(getFIX(vcf)))
+      data.table::setDT(data.frame(getFIX(vcf)))
     }, error = function(e) {
       stop("Error processing VCF data for file: ", file_path, "\n", e$message)
     })
@@ -97,7 +119,7 @@ readVCF <- function(vcf_df) {
     # 2 possible formats of vcf files, adjust CHROM values if needed
     vcf_data[, CHROM := ifelse(grepl("^chr", CHROM), CHROM, paste0("chr", CHROM))]
     vcf_data[, POS := as.integer(POS)]
-    vcf_data[, `:=`(group = group)]
+    vcf_data[, `:=`(group = unlist(group))]
     vcf_data[, sample_name := sample]
 
     return(vcf_data)

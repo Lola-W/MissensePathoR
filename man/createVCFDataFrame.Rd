@@ -4,14 +4,16 @@
 \alias{createVCFDataFrame}
 \title{Create DataFrame for VCF Files}
 \usage{
-createVCFDataFrame(base_dir, vcf_pattern, sample_pattern)
+createVCFDataFrame(base_dir, vcf_pattern, group_pattern, sample_pattern)
 }
 \arguments{
 \item{base_dir}{Directory containing VCF files.}
 
 \item{vcf_pattern}{Regular expression to match VCF files.}
 
-\item{sample_pattern}{Regular expression to extract group and sample names from file paths.}
+\item{group_pattern}{Regular expression to extract group names from file paths.}
+
+\item{sample_pattern}{Regular expression to extract sample names from file paths.}
 }
 \value{
 DataFrame with columns: group, sample, file_name.
@@ -24,6 +26,7 @@ creates a DataFrame with group, sample, and file path information.
 vcf_files_path <- system.file("extdata", package = "MissensePathoR")
 vcf_df <- createVCFDataFrame(vcf_files_path,
                              "*.vcf",
-                             ".*/([0-9]+h)_(Rep[0-9]+)\\\\.vcf$")
+                             "([0-9]+)h",
+                             "Rep([0-9]+)")
 
 }

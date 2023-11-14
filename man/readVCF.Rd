@@ -20,7 +20,8 @@ them into a single data.table. Each VCF file is associated with a group and samp
 vcf_files_path <- system.file("extdata", package = "MissensePathoR")
 vcf_df <- createVCFDataFrame(vcf_files_path,
                              "*.vcf",
-                             ".*/([0-9]+h)_(Rep[0-9]+)\\\\.vcf$")
+                             "([0-9]+)h",
+                             "Rep([0-9]+)")
 vcf_data <- readVCF(vcf_df)
 
 }

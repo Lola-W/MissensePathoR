@@ -13,7 +13,7 @@
 #' temporal response to proteostatic stress. Elife. 2018;7:e39054.
 #' doi: 10.7554/eLife.39054.
 #'
-#' @format A data table with columns:
+#' @format A data table with 9 columns:
 #' \describe{
 #'   \item{CHROM}{Chromosome number where the variant is located.}
 #'   \item{POS}{The position of the variant on the chromosome.}
@@ -65,6 +65,34 @@
 #' data("AlphaMissenseSample")
 #' head(AlphaMissenseSample)
 "AlphaMissenseSample"
+
+#' Example Predicted Pathogenicity Scores
+#'
+#' This dataset contains a sample of predicted pathogenicity scores obtained from the
+#' `predictPathoScore` function. It includes a subset of variants with their respective
+#' pathogenicity predictions and classifications.
+#'
+#' @format A data table with 3848 rows and 13 columns.
+#' \describe{
+#'   \item{sample_name}{\code{character} Sample identifier}
+#'   \item{group}{\code{character} Group classification}
+#'   \item{CHROM}{\code{character} Chromosome where the variant is located}
+#'   \item{POS}{\code{integer} Position of the variant on the chromosome}
+#'   \item{REF}{\code{character} Reference allele}
+#'   \item{ALT}{\code{character} Alternate allele representing the variant}
+#'   \item{genome}{\code{character} Genome build (e.g., hg38)}
+#'   \item{uniprot_id}{\code{character} UniProt identifier for the associated protein}
+#'   \item{transcript_id}{\code{character} Transcript identifier}
+#'   \item{protein_variant}{\code{character} Protein variant notation}
+#'   \item{am_pathogenicity}{\code{numeric} AlphaMissense pathogenicity score}
+#'   \item{am_class}{\code{character} Pathogenicity classification}
+#'   \item{QUAL}{\code{numeric} Quality score of the variant call}
+#' }
+#' @source Generated using `predictPathoScore` function from the MissensePathoR package.
+#' @examples
+#' data(predScoreSample)
+#' head(predScoreSample)
+"predScoreSample"
 
 
 

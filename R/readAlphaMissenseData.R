@@ -25,7 +25,7 @@ readAlphaMissenseData <- function(path = NULL){
             "If you want the full dataset please download it from ",
             "https://storage.googleapis.com/dm_alphamissense/AlphaMissense_hg38.tsv.gz ",
             "and specify the path to the dataset in the function.")
-    data("AlphaMissenseSample", package = "MissensePathoR")
+    AlphaMissenseSample <- readRDS(system.file("extdata", "AlphaMissenseSample.rda", package = "MissensePathoR"))
     return(AlphaMissenseSample)
   } else {
     AlphaMissense_data <- data.table::fread(path, sep = "\t")
