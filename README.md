@@ -6,7 +6,7 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-\##Description
+## Description
 
 `MissensePathoR` is an R package designed to perform pathogenicity
 analysis of missense variants across the human proteome using
