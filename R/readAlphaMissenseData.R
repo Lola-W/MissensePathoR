@@ -21,10 +21,11 @@
 #' @export
 readAlphaMissenseData <- function(path = NULL){
   if (is.null(path)) {
+    # contributed by ChatGPT-4
     warning("You have loaded a demo prediction dataset from AlphaMissense. ",
             "If you want the full dataset please download it from ",
             "https://storage.googleapis.com/dm_alphamissense/AlphaMissense_hg38.tsv.gz ",
-            "and specify the path to the dataset in the function.")
+            "unzip with gunzip and specify the path to the dataset in the function.")
     AlphaMissenseSample <- readRDS(system.file("extdata", "AlphaMissenseSample.rda", package = "MissensePathoR"))
     return(AlphaMissenseSample)
   } else {

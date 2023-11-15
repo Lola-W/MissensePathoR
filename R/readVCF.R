@@ -19,7 +19,7 @@
 #'                              "Rep([0-9]+)")
 #'
 createVCFDataFrame <- function(base_dir, vcf_pattern, group_pattern, sample_pattern) {
-  # Ensure the base directory exists
+  # Ensure the base directory exists, contributed by ChatGPT-4
   if (!dir.exists(base_dir)) {
     stop("Base directory does not exist: ", base_dir)
   }
@@ -81,7 +81,7 @@ createVCFDataFrame <- function(base_dir, vcf_pattern, group_pattern, sample_patt
 #' vcf_data <- readVCF(vcf_df)
 #'
 readVCF <- function(vcf_df) {
-  # Validate input DataFrame
+  # Validate input DataFrame, contributed by ChatGPT-4
   if (!all(c("group", "sample", "file_name") %in% names(vcf_df))) {
     stop("Input DataFrame must contain columns: 'group', 'sample', 'file_name'.
          Please consider using createVCFDataFrame() to generate input with proper format.")

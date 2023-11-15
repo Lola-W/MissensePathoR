@@ -1,0 +1,274 @@
+---
+title: "Introduction_MissensePathoR"
+author: "Jiaming Weng"
+date: "`r format(Sys.time(), '%d %b %Y')`"
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: false
+vignette: >
+  %\VignetteIndexEntry{Introduction_MissensePathoR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+opts_chunk$set(fig.align = "center", 
+               out.width = "90%",
+               fig.width = 6, fig.height = 5.5,
+               dev.args=list(pointsize=10),
+               par = TRUE, # needed for setting hook 
+               collapse = TRUE, # collapse input & ouput code in chunks
+               warning = FALSE)
+knit_hooks$set(par = function(before, options, envir)
+  { if(before && options$fig.show != "none") 
+       par(family = "sans", mar=c(4.1,4.1,1.1,1.1), mgp=c(3,1,0), tcl=-0.5)
+})
+set.seed(1) # for exact reproducibility
+```
+
+## Instruction
+`MissensePathoR` is an R package designed to perform pathogenicity analysis of missense variants across the human proteome using AlphaMissense's deep learning predictions, catering to both single variant and gene-level analyses. This package provides quantitative (`score`) and qualitative (`class`) pathogenicity analysis across user defined groups, and uniquely offers users a platform to explore differential distributions and patterns of pathogenicity scores, thus enriching the understanding of missense variants' impact in genomics research. MissensePathoR is the first R package that facilitates comparisons between pathogenicity scores of variants in groups, further enriched by its provision for visualization of score and class distribution patterns, and ranked gene pathway enrichment analyses. The package analyses variant call format (vcf) file, which is the standardized text file format used in bioinformatics for storing gene sequence variations (Danecek et al., 2011), making it particularly valuable for researchers in genome-wide association studies (GWAS) and those involved in variant calling of whole-genome or single-cell RNA sequencing analysis. 
+
+To download **MissensePathoR**, use the following commands:
+
+``` r
+require("devtools")
+devtools::install_github("anjalisilva/MissensePathoR", build_vignettes = TRUE)
+library("MissensePathoR")
+```
+To list all sample functions available in the package:
+``` r
+ls("package:MissensePathoR")
+```
+
+To list all sample datasets available in the package:
+``` r
+data(package = "MissensePathoR")
+```
+
+### Detail on AlphaMissense
+AlphaMissense is a state-of-the-art deep learning model that predicts the pathogenicity of single-amino acid changes in proteins using sequence data and structural context (Cheng et al., 2023). The variant effect prediction score is defined as the log-likelihood difference between the reference amino acid and the alternative amino acid, indicating likelihood of a variant being pathogenic (closer to 0 more likely benign variant, closer to 1 more likely pathogenic variant). The class prediction is to interpret a variant as “likely pathogenic,” “ambiguous,” or “likely benign." with model define threshold score values.
+
+## Components
+
+<img src="../inst/extdata/Overview_flowchart.png" alt="Workflow of MissensePathoR" width="600"/>
+
+## Application
+
+Here, we demonstrate some typical applications of the package's functions using the included sample datasets on hg38 human reference genome.
+
+### Loading Sample Data
+
+The package comes with sample datasets (`vcfSample` for sample vcf files readed containing variants, `AlphaMissenseSample` for a small subset of AlphaMissense dataset, and `predScoreSample` for a dataset of annotated variants with predicted pathogenic class and score) that can be used to test and explore the features provided. Take `AlphaMissenseSample.rda` as an example, to load a sample dataset and see its structure, use the following commands:
+
+``` r
+AlphaMissenseSample <- readRDS(system.file("extdata", "AlphaMissenseSample.rda", package = "MissensePathoR"))
+head(AlphaMissenseSample)
+```
+
+### Read VCF Files into a Data Table
+
+The `readVCF` function is a critical component of the MissensePathoR package, designed to process Variant Call Format (VCF) files. This function takes a DataFrame, as created by helper function `createVCFDataFrame` with regex expression on `base_dir`, `vcf_pattern`, `group_pattern`, and `sample_pattern`, and reads each VCF file, linking it with its corresponding group and sample information. The resulting data is combined into a single `data.table`.
+
+#### Functionality
+
+`readVCF` performs the following key steps:
+
+- Iterates over each row of the DataFrame, reading the VCF file specified in the 'file_name' column.
+- Utilizes `vcfR::read.vcfR` for reading the VCF files, ensuring an accurate and efficient processing of genomic data.
+- Save the VCF data into a `data.table` format.
+- Filters and processes the VCF data to focus on single nucleotide polymorphisms (SNPs), providing warnings for non-SNP variants.
+
+#### Usage Example
+
+Below is an example of how to use `readVCF` in conjunction with `createVCFDataFrame` to process VCF files:
+
+```r
+# Define the path to VCF files
+vcf_files_path <- system.file("extdata", package = "MissensePathoR")
+
+# Create a DataFrame of VCF files, here the format of the vcf file is
+# ./inst/extdata/0h_Rep1.vcf
+vcf_df <- createVCFDataFrame(base_dir = vcf_files_path, , vcf_pattern = "*.vcf", , group_pattern = "([0-9]+)h", sample_pattern = "Rep([0-9]+)")
+
+# Read and combine VCF data into a data.table
+vcf_data <- readVCF(vcf_df)
+```
+
+### Read AlphaMissense Data
+
+The `readAlphaMissenseData` function in MissensePathoR retrieve and process prediction data from AlphaMissense.
+
+#### Functionality
+
+`readAlphaMissenseData` offers the following capabilities:
+
+- Retrieves and loads the AlphaMissense data.
+- Processes the data into a `data.table` formats.
+
+#### Usage Example
+
+To use the full AlphaMissense dataset for hg38, download it from the official source (https://storage.googleapis.com/dm_alphamissense/AlphaMissense_hg38.tsv.gz) and specify the path. Please `gunzip */AlphaMissense_hg38.tsv.gz` in terminal before using it. Note the the unzipped dataset takes 5GB, ensure the designated directory have enough storage for it.
+
+Below is an example demonstrating how to use `readAlphaMissenseData`:
+
+```r
+# Load the demo dataset
+demo_data <- readAlphaMissenseData()
+# full_data <- readAlphaMissenseData("path/to/AlphaMissense_hg38.tsv")
+```
+
+### Predict Pathogenicity Scores for VCF Data
+
+The `predictPathoScore` function in MissensePathoR integrate variant data from VCF files with the pathogenicity predictions provided by AlphaMissense.
+
+#### Functionality
+
+`predictPathoScore` offers the following key functionalities:
+
+- Merges VCF data with Alpha Missense predictions based on genomic coordinates (CHROM, POS) and alleles (REF, ALT).
+- Only variants with corresponding predictions in the AlphaMissense dataset are included.
+- Add pathogenicity scores and classifications to each row of variants
+
+#### Usage Example
+
+Below is an example showcasing the use of `predictPathoScore`:
+
+```r
+# vcfSample and AlphaMissenseSample are loaded datasets in the package
+prediction <- predictPathoScore(vcfSample, AlphaMissenseSample)
+head(prediction)
+```
+
+### Tabular Summary of Class Distributions and Pathogenicity Scores
+
+The MissensePathoR package provides two essential functions, `classSummary` and `scoreSummary`, for generating tabular summaries of class distributions and pathogenicity scores, respectively.
+
+#### Summarize Class Distribution by Group
+
+The `classSummary` function calculates and returns a summary of the count of each pathogenicity class within each group.
+
+##### Functionality
+
+- Counts the occurrences of each pathogenicity class (`am_class`) within each group.
+- Returns a data table with groups as rows and classes as columns, where cell values represent counts.
+
+##### Usage Example
+
+Here's how to use `classSummary` to get a summary of class distributions:
+
+```r
+data(predScoreSample)
+summary <- classSummary(predScoreSample)
+print(summary)
+```
+<img src="../inst/extdata/demo_class_image.png" alt="classViz sample output" width="600"/>
+
+
+#### Calculate Summary Pathogenicity Scores by Specified Category
+
+The `scoreSummary` function provides a summary of pathogenicity scores within specified categories of the data.
+
+##### Functionality
+
+- Calculates summary statistics (mean, median, minimum, maximum, standard deviation) for pathogenicity scores.
+- Groups data based on a specified category (default is `group`).
+
+##### Usage Example
+
+Use `scoreSummary` to analyze pathogenicity scores:
+
+```r
+# Summary by group
+group_summary <- scoreSummary(predScoreSample, category = "group")
+print(group_summary)
+
+# Summary by sample name
+sample_summary <- scoreSummary(predScoreSample, category = "sample_name")
+print(sample_summary)
+```
+
+### Visualize Proportions of Pathogenicity Classes
+
+The `classVis` function in MissensePathoR is designed to visually represent the distribution of pathogenicity classes across different groups. It creates a stacked barplot, for user to compare distribution of classes within and between the specified groups.
+
+#### Functionality
+
+- Creates a stacked barplot to visualize the proportions of pathogenicity classes (`am_class`).
+- Allows the selection of specific groups for comparison or uses all available groups if none are specified.
+- Returns a `ggplot` object.
+
+#### Usage Example
+
+Here's an example of how to use `classVis` for visualizing class distributions:
+
+```r
+# Visualize pathogenicity class distributions for specific groups
+classVis(predScoreSample, groups = c("0h", "1h"))
+```
+
+### Visualize Distribution of Pathogenicity Scores
+
+The `scoreVis` function in the MissensePathoR package is an essential tool for visualizing the distribution of pathogenicity scores across different groups. This function generates box plots of the variations in pathogenicity scores within and between specified groups.
+
+#### Functionality
+
+- Produces box plots to visualize the distribution of `am_pathogenicity` scores.
+- Allows the selection of specific groups for comparison, or uses all available groups if none are specified.
+- Returns a `ggplot` object.
+
+#### Usage Example
+
+Here's how to use `scoreVis` to visualize pathogenicity score distributions:
+
+```r
+# Visualize pathogenicity score distributions for specific groups
+scoreVis(predScoreSample, groups = c("0h", "1h"))
+```
+<img src="../inst/extdata/demo_score_image.png" alt="scoreViz sample output" width="600"/>
+
+
+### Minimal requirements
+
+* The **R subdirectory** within an R package contains all the R code files or script files. These are files ending with ".R". 
+
+* The **man subdirectory** contains help documentation for each function that is available to the user. Help files should be autogenerated via *roxygen2* package based on the roxygen tags used in the .R files from R subdirectory.
+
+* **DESCRIPTION** file contains metadata, including the package name, the version number, the author and maintainer contact information, along with other information.
+
+* **NAMESPACE** file provides a "context for looking up the value of an object associated with a name". This file will contain export(), import() and importFrom() statements. This file will be auto-updated via *roxygen2* package based on the roxygen tags used in the .R files from R subdirectory.
+
+### Other
+
+* **README** file mainly describes what the package does. For the purpose of this course, the following elements in order are required: 1. Description, 2. Installation, 3. Overview, 4. Contributions, 5. References, and 6. Acknowledgements. Any other content of student's choice should be placed after these six elements. 
+
+* **LICENSE** file describing who can use the R package. 
+
+* The **data** subdirectory with data (.rda) is included to demonstrate utility of functions in the package with this data. If data is included, proper documentation for data must be provided using data.R file. Including data in the R package, however, is optional. If not providing own data, must show examples with external datasets so user of the package can still understand utility of each function. 
+
+* The **tests** subdirectory includes the testthat subdirectory, which has test that are written to see if functions are working as expected. There should be unit tests and integration tests. 
+
+* The **vignettes** subdirectory permit to include vignettes for the R package. A vignette is a long-form tutorial to the package, which shows the applications of functions using a sample dataset. Explain the functions to the user, the purpose, show the output to the user and explain how to interpret the output to the user. Visuals should be included, if the application of the function is to generate a visual. You may include multiple vignettes for the package, but at least one vignette should be a long form tutorial showing applicability of all the functions in the package. Vignettes must end with *sessionInfo()*; attend lecture to understand why this is. 
+
+* The **inst** subdirectory contains other files and subdirectories. **CITATION** file should be included here. Other subdirectories may include extdata and shiny-scripts. The **extdata** subdirectory can include images included in README file. The **shiny-scripts** subdirectory should include shiny script files (app.R). 
+
+* The local project must be housed in a GitHub repository. There should be a record of the changes made to the package via Git commit messages. For the purpose of this course, ensure the **.Rproj** file is available on GitHub. Do NOT add it to .gitignore.
+
+## References
+- Cheng, J., Novati, G., Pan, J., Bycroft, C., Žemgulytė, A., Applebaum, T., Pritzel, A., Wong, L. H., Zielinski, M., Sargeant, T., Schneider, R. G., Senior, A. W., Jumper, J., Hassabis, D., Kohli, P., & Avsec, Ž. (2023). Accurate proteome-wide missense variant effect prediction with AlphaMissense. Science, 381(6664), eadg7492. https://doi.org/10.1126/science.adg7492
+- Danecek, P., Auton, A., Abecasis, G., Albers, C. A., Banks, E., DePristo, M. A., Handsaker, R. E., Lunter, G., Marth, G. T., Sherry, S. T., McVean, G., & Durbin, R. (2011). The variant call format and VCFtools. Bioinformatics, 27(15), 2156–2158. https://doi.org/10.1093/bioinformatics/btr330
+- Dowle M, Srinivasan A (2023). _data.table: Extension of `data.frame`_. R package version 1.14.8, <https://CRAN.R-project.org/package=data.table>.
+- H. Wickham. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York, 2016.
+- Johansen, N., Somasundaram, S., Travaglini, K. J., Yanny, A. M., Shumyatcher, M., Casper, T., Cobbs, C., Dee, N., Ellenbogen, R., Ferreira, M., Goldy, J., Guzman, J., Gwinn, R., Hirschstein, D., Jorstad, N. L., Keene, C. D., Ko, A., Levi, B. P., Ojemann, J. G., … Miller, J. A. (2023). Interindividual variation in human cortical cell type abundance and expression. Science, 382(6667), eadf2359. https://doi.org/10.1126/science.adf2359
+- Knaus BJ, Grünwald NJ (2017). “VCFR: a package to manipulate and visualize variant call format data in R.” _Molecular Ecology Resources_, *17*(1), 44-53.
+  ISSN 757, <https://dx.doi.org/10.1111/1755-0998.12549>.
+- Neuwirth E (2022). _RColorBrewer: ColorBrewer Palettes_. R package version 1.1-3, <https://CRAN.R-project.org/package=RColorBrewer>.
+- St»hle, L., & Wold, S. (1989). Analysis of variance (ANOVA). Chemometrics and Intelligent Laboratory Systems, 6(4), 259–272. https://doi.org/10.1016/0169-7439(89)80095-4
+Wang, K., Li, M., & Hakonarson, H. (2010). ANNOVAR: Functional annotation of genetic variants from high-throughput sequencing data. Nucleic Acids Research, 38(16), e164–e164. https://doi.org/10.1093/nar/gkq603
+------------------------------------------------------------------------
+
+```{r}
+sessionInfo()
+```

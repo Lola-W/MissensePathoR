@@ -4,7 +4,7 @@
 #' within the specified category of the data.
 #'
 #' @param data A data table containing pathogenicity scores and categories.
-#' @param category A character string specifying the column name to group by.
+#' @param category A character string specifying the column name to group by, default is group.
 #' @return A data table with mean, median, minimum, maximum, and standard deviation
 #' of the pathogenicity scores for each level of the specified category.
 #' @export
@@ -14,8 +14,8 @@
 #'   scoreSummary(predScoreSample, category = "sample_name")
 #' }
 #' @importFrom data.table data.table
-scoreSummary <- function(data, category) {
-  # Check if 'data' is a data.table
+scoreSummary <- function(data, category = "group") {
+  # Check if 'data' is a data.table, contributed by ChatGPT-4
   if (!inherits(data, "data.table")) {
     stop("The input 'data' must be a data.table object.")
   }

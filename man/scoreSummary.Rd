@@ -4,12 +4,12 @@
 \alias{scoreSummary}
 \title{Calculate Summary Pathogenicity Scores by Specified Category}
 \usage{
-scoreSummary(data, category)
+scoreSummary(data, category = "group")
 }
 \arguments{
 \item{data}{A data table containing pathogenicity scores and categories.}
 
-\item{category}{A character string specifying the column name to group by.}
+\item{category}{A character string specifying the column name to group by, default is group.}
 }
 \value{
 A data table with mean, median, minimum, maximum, and standard deviation

@@ -29,7 +29,7 @@
 #' }
 
 predictPathoScore <- function(vcf_data, AlphaMissense_data) {
-  # Error checking for input types
+  # Error checking for input types, contributed by ChatGPT-4
   if (!inherits(vcf_data, "data.table")) {
     stop("vcf_data must be a data.table.")
   }

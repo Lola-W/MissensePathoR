@@ -14,7 +14,7 @@
 #'
 #' @export
 classSummary <- function(data) {
-  # Ensure 'data' is a data.table
+  # Ensure 'data' is a data.table, contributed by ChatGPT-4
   if (!inherits(data, "data.table")) {
     stop("The 'data' parameter must be a data.table object.")
   }
