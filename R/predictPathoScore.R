@@ -52,12 +52,11 @@ predictPathoScore <- function(vcf_data, AlphaMissense_data) {
   # Merge based on CHROM, POS, REF, and ALT columns
   merged_data <- vcf_data[AlphaMissense_data,
                           nomatch = 0,
-                          on = .(CHROM, POS, REF, ALT),
-                          .(sample_name, group, CHROM, POS, REF, ALT, genome, uniprot_id, transcript_id, protein_variant, am_pathogenicity, am_class, QUAL)]
+                          on = .(CHROM, POS, REF, ALT)]
 
   # Report the number of removed rows due to lack of prediction
   removed_rows <- nrow(vcf_data) - nrow(merged_data)
-  print(paste("Number of rows in merged data:", nrow(merged_data),
+  cat(paste("Number of rows in merged data:", nrow(merged_data),
                 "\nNumber of rows removed due to lack of prediction:", removed_rows))
 
   return(merged_data)
