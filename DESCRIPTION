@@ -1,11 +1,10 @@
 Package: MissensePathoR
 Type: Package
-Title: What the Package Does (Title Case)
+Title: MissensePathoR is an R package designed to perform pathogenicity analysis of missense variants across the human proteome based on AlphaMissense's predictions, catering to both single variant and gene-level analyses across groups.
 Version: 0.1.0
-Author: person("Jiaming", "Weng", email = "jiaming.weng@mail.utoronto.ca")
+Author: person("Jiaming", "Weng", email = "jiaming.weng@mail.utoronto.ca", role = c("aut", "cre"))
 Maintainer: Jiaming Weng <jiaming.weng@mail.utoronto.ca>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: MissensePathoR is an R package designed to perform pathogenicity analysis of missense variants across the human proteome using AlphaMissense’s deep learning predictions, catering to both single variant and gene-level analyses. This package provides quantitative and qualitative pathogenicity analysis across user defined groups, and uniquely offers users a platform to explore differential distributions and patterns of pathogenicity scores, thus enriching the understanding of missense variants’ impact in genomics research. MissensePathoR is the first R package that facilitates comparisons between pathogenicity scores of variants in groups, further enriched by its provision for visualization of score and class distribution patterns, and ranked gene pathway enrichment analyses. The package analyses variant call format (vcf) file, which is the standardized text file format used in bioinformatics for storing gene sequence variations (Danecek et al., 2011), making it particularly valuable for researchers in genome-wide association studies (GWAS) and those involved in variant calling of whole-genome or single-cell RNA sequencing analysis. 
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
