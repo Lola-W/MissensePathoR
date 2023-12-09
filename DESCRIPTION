@@ -1,6 +1,6 @@
 Package: MissensePathoR
 Type: Package
-Title: MissensePathoR is an R package designed to perform pathogenicity analysis of missense variants across the human proteome based on AlphaMissense's predictions, catering to both single variant and gene-level analyses across groups.
+Title: MissensePathoR is an R package designed to perform pathogenicity analysis of missense variants across the human proteome based on AlphaMissense's predictions, catering to both single variant and gene-level analyses across groups
 Version: 0.1.0
 Author: person("Jiaming", "Weng", email = "jiaming.weng@mail.utoronto.ca", role = c("aut", "cre"))
 Maintainer: Jiaming Weng <jiaming.weng@mail.utoronto.ca>
@@ -8,12 +8,14 @@ Description: MissensePathoR is an R package designed to perform pathogenicity an
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+biocViews: UniProt.ws
 Imports: 
     data.table,
     dplyr,
     ggplot2,
     RColorBrewer,
-    vcfR
+    vcfR,
+    UniProt.ws
 RoxygenNote: 7.2.3
 Suggests: 
     knitr,
