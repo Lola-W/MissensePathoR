@@ -26,8 +26,7 @@ readAlphaMissenseData <- function(path = NULL){
             "If you want the full dataset please download it from ",
             "https://storage.googleapis.com/dm_alphamissense/AlphaMissense_hg38.tsv.gz ",
             "unzip with gunzip and specify the path to the dataset in the function.")
-    AlphaMissenseSample <- readRDS(system.file("extdata", "AlphaMissenseSample.rda", package = "MissensePathoR"))
-    return(AlphaMissenseSample)
+    return(MissensePathoR::AlphaMissenseSample)
   } else {
     AlphaMissense_data <- data.table::fread(path, sep = "\t")
     # Ensure the general format of vcf files
