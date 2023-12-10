@@ -20,7 +20,10 @@ We used variant frequency as the pseudo gene count and normalized it using CPM (
 Incorporates pathogenicity score for weighted CPM calculation and uses a Quasi-likelihood model to account for over-dispersion.
 }
 \examples{
-result <- mapGene(predScoreSample)
-result$sample_name = paste0(result$sample_name,"_",result$group)
-diffOut <- diffSNPs(sample_res, "0h")
+\dontrun{
+  result <- mapGene(predScoreSample)
+  result$sample_name = paste0(result$sample_name,"_",result$group)
+  diffOut <- diffSNPs(result, "0h")
+  head(diffOut$table)
+}
 }

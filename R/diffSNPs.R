@@ -10,18 +10,21 @@
 #' @importFrom dplyr mutate select
 #' @importFrom edgeR DGEList calcNormFactors estimateDisp glmQLFit glmQLFTest topTags
 #' @export
-#'
+
 #' @examples
-#' result <- mapGene(predScoreSample)
-#' result$sample_name = paste0(result$sample_name,"_",result$group)
-#' diffOut <- diffSNPs(sample_res, "0h")
+#' \dontrun{
+#'   result <- mapGene(predScoreSample)
+#'   result$sample_name = paste0(result$sample_name,"_",result$group)
+#'   diffOut <- diffSNPs(result, "0h")
+#'   head(diffOut$table)
+#' }
 diffSNPs <- function(data, groupControl) {
   # Validate input
   if (!("group" %in% names(data)) ||
       !("hgnc_gene" %in% names(data)) ||
       !("sample_name" %in% names(data)) ||
       !("am_class" %in% names(data))) {
-    stop("Data must contain 'group', hgnc_gene', 'sample_name', and 'am_class'.")
+    stop("Please consider using mapGene() to get HGNC gene names for AlphaMissense predictions. Data must contain 'group', hgnc_gene', 'sample_name', and 'am_class'.")
   }
 
   # Calculate variant frequency and total count for each sample
@@ -40,8 +43,8 @@ diffSNPs <- function(data, groupControl) {
   # DE analysis
   # Prepare counts matrix for
   counts_matrix <- dcast(data, hgnc_gene ~ sample_name, value.var = "weighted_cpm",fun.aggregate = sum)
-  row.names(counts_matrix) <- counts_matrix$hgnc_gene
-  counts_matrix <- counts_matrix[,-1]
+  counts_matrix <- data.frame(counts_matrix, row.names = "hgnc_gene")
+
   # Design model
   samples <- data %>%  select(group, sample_name) %>% unique()
   samples$group <- relevel(as.factor(samples$group), ref = groupControl)
