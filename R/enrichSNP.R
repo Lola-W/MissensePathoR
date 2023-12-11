@@ -41,23 +41,40 @@ performGost <- function(gene_list, query_type) {
 
 
 
-#' Pathway Enrichment using Thresholded Over-representation Analysis for SNPs
+#' Pathway Enrichment Analysis Using g:Profiler
 #'
-#' Performs gene set enrichment analysis on identified up- and down-regulated genes using the gprofiler2 package.
-#' This function applies a significance threshold (FDR <= 0.05) and uses log fold change (logFC) to categorize genes into up-regulated and down-regulated groups.
-#' In edge cases where fewer than one gene is identified as significantly differentially expressed, the function adjusts the gene lists accordingly.
-#' For instance, if no genes meet the significance criteria, a warning is issued. If only a few genes are identified, the function extends the gene list based on fold change to meet the minimum threshold for enrichment analysis.
+#' This function performs pathway enrichment analysis on SNP data, identifying
+#' up- and down-regulated genes based on thresholded over-representation analysis.
+#' It utilizes g:Profiler (Raudvere et al. 2019) for functional mapping.
 #'
-#' @param diffOut A TopTags object containing differential expression results with columns 'FDR' and 'logFC'.
+#' @param diffOut A TopTags object containing differential expression results
+#' with columns 'FDR' and 'logFC'.
 #'
-#' @return A list containing the enrichment results for up-regulated, down-regulated, and thresholded genes.
+#' @return A list containing enrichment results for up-regulated, down-regulated,
+#' and all significantly thresholded genes.
+#' @details
+#' The function applies a significance threshold (FDR <= 0.05) to categorize genes
+#' into up-regulated and down-regulated groups based on log fold change (logFC).
+#' In edge cases where fewer than one gene is identified as significantly
+#' differentially expressed, the function adjusts the gene lists accordingly:
+#' - If no genes meet the significance criteria, the function stops and issues a warning.
+#' - If only a few genes are identified as significant, the function expands the gene list
+#'   based on fold changes(logFC) to ensure a minimum number(3) of genes are analyzed.
+#' - Special handling is done to ensure a balanced representation of up- and down-regulated genes.
+#'
+#' Pathway enrichment analysis is conducted using the g:Profiler tool,
+#' specifically employing the GOST (gene set over-representation testing) method.
+#'
 #' @importFrom gprofiler2 gost
 #' @export
-#'
 #' @examples
 #' \dontrun{
 #'   enrichOut <- enrichSNP(diffOut)
 #' }
+#' @references
+#' Raudvere, Uku, et al. (2019). "G: Profiler: A Web Server for Functional Enrichment
+#' Analysis and Conversions of Gene Lists (2019 Update)." Nucleic Acids Research,
+#' 47(W1): W191–98.
 enrichSNP <-  function(diffOut) {
   # Check if diffOut has the required columns
   requiredCols <- c("FDR", "logFC")
@@ -78,10 +95,10 @@ enrichSNP <-  function(diffOut) {
     message("As only ", length(up_list), " up-regulated genes and ", length(down_list),
             " down-regulated genes are identified as significant in our pipeline, ",
             "we threshold select the top ", length(sig_list),
-            " genes on fold changes (to align with our total of ", length(sig_list),
+            " genes on fold changes (to align with our total of ", max(3, length(sig_list)),
             " significant genes identified).")
-    up_list <- rownames(head(diffOut$table[order(diffOut$table$logFC, decreasing = TRUE),], length(sig_list)))
-    down_list <- rownames(head(diffOut$table[order(diffOut$table$logFC),], length(sig_list)))
+    up_list <- rownames(head(diffOut$table[order(diffOut$table$logFC, decreasing = TRUE),], max(3, length(sig_list))))
+    down_list <- rownames(head(diffOut$table[order(diffOut$table$logFC),], max(3, length(sig_list))))
   } else {
     if (length(up_list) <= 1) {
       message("As only ", length(up_list), " up-regulated genes are identified as significant in our pipeline, ",
