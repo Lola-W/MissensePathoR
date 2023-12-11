@@ -13,7 +13,7 @@
 #'   scoreSummary(predScoreSample, category = "group")
 #'   scoreSummary(predScoreSample, category = "sample_name")
 #' }
-#' @importFrom data.table data.table
+#' @import dplyr
 scoreSummary <- function(data, category = "group") {
   # Check if 'data' is a data.table, contributed by ChatGPT-4
   if (!inherits(data, "data.table")) {
@@ -33,15 +33,15 @@ scoreSummary <- function(data, category = "group") {
     stop("'am_pathogenicity' column not found in the data table.")
   }
 
-  # Calculate summary statistics grouped by the specified 'category'
-  summary_data <- data[, .(
-    mean_pathogenicity = mean(am_pathogenicity, na.rm = TRUE),
-    median_pathogenicity = median(am_pathogenicity, na.rm = TRUE),
-    min_pathogenicity = min(am_pathogenicity, na.rm = TRUE),
-    max_pathogenicity = max(am_pathogenicity, na.rm = TRUE),
-    sd_pathogenicity = sd(am_pathogenicity, na.rm = TRUE)
-  ), by = .(get(category))]  # Dynamic column name for grouping
+  summary_data <- data %>%
+    group_by(!!sym(category)) %>%
+    summarise(
+      mean_pathogenicity = mean(am_pathogenicity, na.rm = TRUE),
+      median_pathogenicity = median(am_pathogenicity, na.rm = TRUE),
+      min_pathogenicity = min(am_pathogenicity, na.rm = TRUE),
+      max_pathogenicity = max(am_pathogenicity, na.rm = TRUE),
+      sd_pathogenicity = sd(am_pathogenicity, na.rm = TRUE)
+    )
 
-  setnames(summary_data, old = "get", new = category) # fix the name
   return(summary_data)
 }

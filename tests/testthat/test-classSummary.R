@@ -7,7 +7,6 @@ test_that("classSummary returns correct count summaries", {
 
   result <- classSummary(testData)
 
-  expect_true("data.table" %in% class(result))
   expect_equal(nrow(result), length(unique(testData$group)))
 
   # Check if summary contains the correct groups and classes
@@ -15,10 +14,10 @@ test_that("classSummary returns correct count summaries", {
   expect_true(all(c("pathogenic", "benign") %in% names(result)))
 
   # Check for correct counts
-  expect_equal(result[group == "A", pathogenic], 1L)
-  expect_equal(result[group == "A", benign], 2L)
-  expect_equal(result[group == "B", pathogenic], 2L)
-  expect_equal(result[group == "B", benign], 1L)
+  expect_equal(as.numeric(result[1,3]), 1L)
+  expect_equal(as.numeric(result[1,2]), 2L)
+  expect_equal(as.numeric(result[2,3]), 2L)
+  expect_equal(as.numeric(result[2,2]), 1L)
 })
 
 # Test that 'classSummary' handles incorrect inputs

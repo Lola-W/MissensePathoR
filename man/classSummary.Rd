@@ -14,8 +14,7 @@ A data table with groups as rows, classes as columns, and counts as cell values.
 }
 \description{
 This function calculates the count of each class within each group and
-returns a data table with a summary. It requires the `data.table` package
-for its operations.
+returns a data table with a summary.
 }
 \examples{
 data(predScoreSample)
