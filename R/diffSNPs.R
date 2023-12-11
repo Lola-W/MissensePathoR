@@ -4,6 +4,11 @@
 #' We used variant frequency as the pseudo gene count and normalized it using CPM (Counts Per Million).
 #' Incorporates pathogenicity score for weighted CPM calculation and uses a Quasi-likelihood model to account for over-dispersion.
 #'
+#'#' @details
+#' The function treats variant frequencies as pseudo gene counts, normalized using the Counts Per Million (CPM) method. It also incorporates pathogenicity scores for a weighted CPM calculation, offering a more refined measure of variant expression. The weighted CPM accounts for the predicted pathogenicity, with weights assigned based on AlphaMissense score thresholds.
+#'
+#' The Quasi-likelihood model from `edgeR` is employed to account for over-dispersion in the data, ensuring robust statistical analysis.
+#'
 #' @param data A data frame containing 'uniprot_id', 'sample_name', and 'am_class'.
 #' @param groupControl The reference level for the 'group' factor in the model design.
 #' @return A table of differentially expressed SNPs.

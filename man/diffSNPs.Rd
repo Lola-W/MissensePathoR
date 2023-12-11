@@ -19,6 +19,12 @@ This function performs differential SNP analysis based on pathogenicity scores a
 We used variant frequency as the pseudo gene count and normalized it using CPM (Counts Per Million).
 Incorporates pathogenicity score for weighted CPM calculation and uses a Quasi-likelihood model to account for over-dispersion.
 }
+\details{
+#' @details
+The function treats variant frequencies as pseudo gene counts, normalized using the Counts Per Million (CPM) method. It also incorporates pathogenicity scores for a weighted CPM calculation, offering a more refined measure of variant expression. The weighted CPM accounts for the predicted pathogenicity, with weights assigned based on AlphaMissense score thresholds.
+
+The Quasi-likelihood model from `edgeR` is employed to account for over-dispersion in the data, ensuring robust statistical analysis.
+}
 \examples{
 \dontrun{
   result <- mapGene(predScoreSample)

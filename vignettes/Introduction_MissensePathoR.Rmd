@@ -160,11 +160,9 @@ The `classSummary` function calculates and returns a summary of the count of eac
 Here's how to use `classSummary` to get a summary of class distributions:
 
 ```r
-data(predScoreSample)
-summary <- classSummary(predScoreSample)
+summary <- classSummary(MissensePathoR::predScoreSample)
 print(summary)
 ```
-<img src="../inst/extdata/demo_class_image.png" alt="classViz sample output" width="600"/>
 
 
 #### Calculate Summary Pathogenicity Scores by Specified Category
@@ -208,6 +206,7 @@ Here's an example of how to use `classVis` for visualizing class distributions:
 # Visualize pathogenicity class distributions for specific groups
 classVis(predScoreSample, groups = c("0h", "1h"))
 ```
+<img src="../inst/extdata/demo_class_image.png" alt="classViz sample output" width="600"/>
 
 ### Visualize Distribution of Pathogenicity Scores
 
@@ -229,6 +228,155 @@ scoreVis(predScoreSample, groups = c("0h", "1h"))
 ```
 <img src="../inst/extdata/demo_score_image.png" alt="scoreViz sample output" width="600"/>
 
+### Pathway Enrichment Analysis on Variants
+
+#### Sequential Workflow
+
+It's important to follow the sequential order of functions for pathway enrichment analysis in `MissensePathoR`:
+
+1. **`mapGene`**: Start by mapping UniProt IDs to HGNC gene names.
+2. **`diffSNPs`**: Perform differential SNP analysis.
+3. **`enrichSNP`**: Conduct pathway enrichment analysis on the differential SNP data.
+4. **`pathwayViz`**: Visualize the enriched pathways for comprehensive insights.
+
+Note that the data we used in demo is a small subset of real world variant data, the results are for functionality demonstration purpose, instead of capturing true biological meaning.
+
+### Map Variants to HGNC Gene Names Using `mapGene`
+
+The `mapGene` function in the `MissensePathoR` package is integral for linking variants to genes. It maps the AlphaMissense predicted UniProt IDs to HGNC gene names, facilitating gene-centric analysis of variants. This function serves as a foundational step in the pathway enrichment analysis workflow, which includes `mapGene`, `diffSNPs`, `enrichSNP`, and `pathwayViz`.
+
+#### Functionality
+
+- Maps UniProt IDs to HGNC gene names using `UniProt.ws`.
+- Ensures seamless integration of gene names into the variant dataset.
+- Essential for downstream analyses like differential SNP analysis and pathway enrichment.
+
+#### Usage Example
+
+```r
+# Mapping UniProt IDs to HGNC gene names
+result <- mapGene(predScoreSample)
+head(result)
+```
+```
+# Expected Output
+   uniprot_id sample_name group CHROM       POS REF ALT genome     transcript_id protein_variant am_pathogenicity      am_class    QUAL hgnc_gene
+1: A0A1B0GUY1        Rep1    0h  chr5 148242620   A   T   hg38 ENST00000638089.2            Q75L            0.096 likely_benign 490.051    MARCOL
+2: A0A1B0GUY1        Rep2    0h  chr5 148242620   A   T   hg38 ENST00000638089.2            Q75L            0.096 likely_benign 298.776    MARCOL
+3: A0A1B0GUY1        Rep1    1h  chr5 148242620   A   T   hg38 ENST00000638089.2            Q75L            0.096 likely_benign 354.507    MARCOL
+4: A0A1B0GUY1        Rep1    0h  chr5 148242620   A   T   hg38 ENST00000638089.2            Q75L            0.096 likely_benign 490.051    MARCOL
+5: A0A1B0GUY1        Rep2    0h  chr5 148242620   A   T   hg38 ENST00000638089.2            Q75L            0.096 likely_benign 298.776    MARCOL
+6: A0A1B0GUY1        Rep1    1h  chr5 148242620   A   T   hg38 ENST00000638089.2            Q75L            0.096 likely_benign 354.507    MARCOL
+```
+
+### Differential SNP Analysis
+
+The `diffSNPs` function in `MissensePathoR` is designed for differential SNP analysis. It relies on `edgeR`, known for handling differential expression analysis in genomic studies. employs a novel approach that incorporates pathogenicity scores and variant frequencies, calculated as pseudo gene counts. This function enable user to study the genetic variations' impact on disease pathology on a gene level across various conditions or time points.
+
+#### Functionality
+
+- **Variant Frequency as Pseudo Gene Count**: Treats variant frequency as pseudo gene count and normalizes it using Counts Per Million (CPM) method.
+  -  **Original CPM Calculation**:
+   \[ \text{CPM}_{\text{original}} = \left( \frac{\text{Variant Frequency}}{\text{Total Count}} \right) \times 10^6 \]
+- **Weighted CPM Calculation**: Integrates pathogenicity score for weighted CPM calculation, providing a more nuanced measure of variant expression.
+
+  - **Defining Weight Categories Based on Pathogenicity Score**:
+  Here, we used the AlphaMissense pathogenicity score threshold use by Google Deepmind in the original paper (Cheng et al., 2023).
+   
+    - **Likely Benign**: Score < 0.34
+    - **Ambiguous**: 0.34 ≤ Score ≤ 0.564
+    - **Likely Pathogenic**: Score > 0.564
+   
+  - **Weighted CPM Calculation**:
+  
+    - The CPM calculation is adjusted to include the pathogenicity score.
+      \[ \text{CPM}_{\text{weighted}} = \text{CPM}_{\text{original}} \times \text{Weight} \]
+    - Weights: Likely Benign = 0.5, Ambiguous = 1, Likely Pathogenic = 2.
+
+- **Quasi-Likelihood Model**: Uses a Quasi-likelihood model from the `edgeR` package to account for over-dispersion in the data.
+
+#### Usage Example
+
+```r
+# predScoreSample has been processed through mapGene
+result <- mapGene(predScoreSample)
+result$sample_name = paste0(result$sample_name, "_", result$group) # a more clear sample_name
+
+# differential SNP analysis
+diffOut <- diffSNPs(result, "0h")
+head(diffOut$table)
+```
+```
+# Expected Output
+            logFC    logCPM            F       PValue          FDR
+GPSM2    16.14934 13.033618 1.450518e+09 1.669858e-07 1.764484e-05
+MTX1     14.31932 11.205159 2.696520e+00 2.862663e-01 1.000000e+00
+MAP3K21  12.31953  9.211887 1.615637e+02 1.836420e-02 3.632406e-01
+NBAS     12.31953  9.211887 1.615637e+02 1.836420e-02 3.632406e-01
+ABHD14A  12.14964  9.043080 1.280933e+02 2.170586e-02 3.632406e-01
+ARHGEF11 12.14964  9.043080 1.280933e+02 2.170586e-02 3.632406e-01
+```
+
+### Pathway Enrichment Analysis on the Differential SNP Data
+
+The `enrichSNP` function in the `MissensePathoR` package provides pathway enrichment analysis for SNP data. Utilizing g:Profiler, it identifies significant pathways among genes categorized based on their pseudo expression in previous differential SNP analysis. This tool is essential for deciphering the biological significance and pathways associated with differentially expressed genes.
+
+#### Functionality
+
+- **Gene Categorization**: Separates genes into up-regulated, down-regulated, and all significantly thresholded groups based on log fold changes (logFC) and False Discovery Rate (FDR).
+- **Edge Case Handling**: In scenarios with very few significantly differentially expressed genes, the function adjusts gene lists to ensure robust analysis. This includes expanding the gene list based on fold changes to maintain a minimum number for analysis, and balancing the representation of up- and down-regulated genes.
+- **Pathway Enrichment**: Conducts over-representation analysis using g:Profiler, specifically employing the GOST method for pathway enrichment. This analysis reveals significant pathways associated with categorized genes.
+- **Result Compilation**: Returns a list of enrichment results for up-regulated, down-regulated, and all significantly thresholded genes from GO:BP("biological process" subontology of Gene Ontology).
+
+#### Usage Example
+
+```r
+# Assuming diffOut is obtained from the diffSNPs function
+enrichOut <- enrichSNP(diffOut)
+
+# Accessing results for different categories
+head(enrichOut$up$go_bp)
+enrichOut$up$plot
+```
+```
+# Expected Output
+                query significant    p_value term_size query_size intersection_size precision     recall    term_id source                                                  term_name
+5  Up-Regulated Genes        TRUE 0.03353309        15          3                 1 0.3333333 0.06666667 GO:0045040  GO:BP        protein insertion into mitochondrial outer membrane
+6  Up-Regulated Genes        TRUE 0.03353309         8          3                 1 0.3333333 0.12500000 GO:1905832  GO:BP                    positive regulation of spindle assembly
+7  Up-Regulated Genes        TRUE 0.03353309         6          3                 1 0.3333333 0.16666667 GO:1904778  GO:BP positive regulation of protein localization to cell cortex
+8  Up-Regulated Genes        TRUE 0.03353309         9          3                 1 0.3333333 0.11111111 GO:1904776  GO:BP          regulation of protein localization to cell cortex
+9  Up-Regulated Genes        TRUE 0.03353309        15          3                 1 0.3333333 0.06666667 GO:0007008  GO:BP                  outer mitochondrial membrane organization
+10 Up-Regulated Genes        TRUE 0.03353309        11          3                 1 0.3333333 0.09090909 GO:0072697  GO:BP                        protein localization to cell cortex
+   effective_domain_size source_order      parents
+5                  21010        11848 GO:00066....
+6                  21010        25982 GO:00512....
+7                  21010        25092 GO:00726....
+8                  21010        25090 GO:00726....
+9                  21010         2663   GO:0007006
+10                 21010        18344   GO:1990778
+```
+<img src="../inst/extdata/demo_enrich_image.png" alt="enrichSNP sample intermediate visualization" width="600"/>
+
+### Visualize Enrichment Pathways
+The `pathwayViz` function in MissensePathoR generates dot plots, providing a clear graphical representation of the top enriched pathways for different sets of genes, such as those identified as significant, up-regulated, or down-regulated in the previous analysis.
+
+#### Functionality
+
+- **Input Data**: Accepts a list containing enrichment results (`enrichOut`) from a function like `gost`. This list should have elements 'sig', 'up', and 'down', each with a sub-element 'go_bp' for different gene categories.
+- **Gene Set Selection**: Allows users to choose the type of genes for visualization (significant, up-regulated, down-regulated), with 'significant' as the default.
+- **Dot Plot Creation**: Generates a dot plot representing the top 10 enriched pathways. The plot includes details such as precision, p-value, and the number of intersected genes in each pathway.Provides a `ggplot` object, enabling further customization and integration into reports or publications.
+
+#### Usage Example
+
+```r
+# enrichOut is obtained from an previous enrichment analysis function like enrichSNP
+# Visualize pathways for up-regulated genes
+pathwayViz_output <- pathwayViz(enrichOut, type = "up")
+
+# To display the plot
+print(pathwayViz_output)
+```
+<img src="../inst/extdata/demo_pathway_image.png" alt="pathwayViz sample output" width="600"/>
 
 ### Minimal requirements
 
@@ -257,14 +405,19 @@ scoreVis(predScoreSample, groups = c("0h", "1h"))
 * The local project must be housed in a GitHub repository. There should be a record of the changes made to the package via Git commit messages. For the purpose of this course, ensure the **.Rproj** file is available on GitHub. Do NOT add it to .gitignore.
 
 ## References
+- Carlson M, Ramos M (2022). _UniProt.ws: R Interface to UniProt Web Services_. R package version 2.38.1.
 - Cheng, J., Novati, G., Pan, J., Bycroft, C., Žemgulytė, A., Applebaum, T., Pritzel, A., Wong, L. H., Zielinski, M., Sargeant, T., Schneider, R. G., Senior, A. W., Jumper, J., Hassabis, D., Kohli, P., & Avsec, Ž. (2023). Accurate proteome-wide missense variant effect prediction with AlphaMissense. Science, 381(6664), eadg7492. https://doi.org/10.1126/science.adg7492
+- Chen, Y., Lun, A. T., McCarthy, D. J., Ritchie, M. E., Phipson, B., Hu, Y., ... & Smyth, G. K. (2015). edgeR: Empirical analysis of digital gene expression data in R. Bioconductor Version: Release (3.12).
 - Danecek, P., Auton, A., Abecasis, G., Albers, C. A., Banks, E., DePristo, M. A., Handsaker, R. E., Lunter, G., Marth, G. T., Sherry, S. T., McVean, G., & Durbin, R. (2011). The variant call format and VCFtools. Bioinformatics, 27(15), 2156–2158. https://doi.org/10.1093/bioinformatics/btr330
 - Dowle M, Srinivasan A (2023). _data.table: Extension of `data.frame`_. R package version 1.14.8, <https://CRAN.R-project.org/package=data.table>.
 - H. Wickham. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York, 2016.
 - Johansen, N., Somasundaram, S., Travaglini, K. J., Yanny, A. M., Shumyatcher, M., Casper, T., Cobbs, C., Dee, N., Ellenbogen, R., Ferreira, M., Goldy, J., Guzman, J., Gwinn, R., Hirschstein, D., Jorstad, N. L., Keene, C. D., Ko, A., Levi, B. P., Ojemann, J. G., … Miller, J. A. (2023). Interindividual variation in human cortical cell type abundance and expression. Science, 382(6667), eadf2359. https://doi.org/10.1126/science.adf2359
+- Kolberg L, Raudvere U, Kuzmin I, Vilo J, Peterson H (2020). “gprofiler2- an R package for gene list functional enrichment analysis and namespace conversion toolset
+  g:Profiler.” _F1000Research_, *9 (ELIXIR)*(709). R package version 0.2.1.
 - Knaus BJ, Grünwald NJ (2017). “VCFR: a package to manipulate and visualize variant call format data in R.” _Molecular Ecology Resources_, *17*(1), 44-53.
   ISSN 757, <https://dx.doi.org/10.1111/1755-0998.12549>.
 - Neuwirth E (2022). _RColorBrewer: ColorBrewer Palettes_. R package version 1.1-3, <https://CRAN.R-project.org/package=RColorBrewer>.
+- Raudvere, Uku, Liis Kolberg, Ivan Kuzmin, Tambet Arak, Priit Adler, Hedi Peterson, and Jaak Vilo. 2019. “G: Profiler: A Web Server for Functional Enrichment Analysis and Conversions of Gene Lists (2019 Update).” Nucleic Acids Research 47 (W1): W191–98.
 - St»hle, L., & Wold, S. (1989). Analysis of variance (ANOVA). Chemometrics and Intelligent Laboratory Systems, 6(4), 259–272. https://doi.org/10.1016/0169-7439(89)80095-4
 Wang, K., Li, M., & Hakonarson, H. (2010). ANNOVAR: Functional annotation of genetic variants from high-throughput sequencing data. Nucleic Acids Research, 38(16), e164–e164. https://doi.org/10.1093/nar/gkq603
 ------------------------------------------------------------------------

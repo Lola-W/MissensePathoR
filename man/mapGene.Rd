@@ -7,13 +7,13 @@
 mapGene(predScoreSample)
 }
 \arguments{
-\item{predScoreSample}{A data frame with a column 'uniprot_id' containing UniProt IDs.}
+\item{predScoreSample}{A data.frame or data.table with a column 'uniprot_id' containing UniProt IDs.}
 }
 \value{
 A data frame that merges the input data frame with a new column 'hgnc_gene' containing the corresponding HGNC gene names.
 }
 \description{
-This function maps UniProt IDs to HGNC gene names using UniProt.ws and merges this information with the original data.
+This function maps AlphaMissense predicted UniProt IDs to HGNC gene names using UniProt.ws and merges this information with the original data.
 }
 \examples{
 # predScoreSample <- data.frame(uniprot_id = c("P12345", "Q67890"))

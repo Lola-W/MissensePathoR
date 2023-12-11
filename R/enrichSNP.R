@@ -7,7 +7,6 @@
 #'
 #' @return A list containing the GOST result, a plot of the GOST result, and GO Biological Process results.
 #' @importFrom gprofiler2 gost gostplot
-#' @export
 performGost <- function(gene_list, query_type) {
   # Validate input
   if (length(gene_list) < 1) {

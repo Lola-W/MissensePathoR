@@ -18,7 +18,9 @@ Imports:
     UniProt.ws,
     edgeR,
     gprofiler2,
-    shiny
+    shiny,
+    tidyr,
+    qpdf
 RoxygenNote: 7.2.3
 Suggests: 
     knitr,

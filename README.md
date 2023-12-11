@@ -52,7 +52,11 @@ devtools::install_github("Lola-W/MissensePathoR", build_vignettes = TRUE)
 library("MissensePathoR")
 ```
 
-Shiny app underconstruction.
+To run the Shiny app:
+
+``` r
+runMissensePathoR()
+```
 
 ## Overview
 
@@ -88,9 +92,8 @@ data(package = "MissensePathoR")
     the distribution of pathogenicity scores within and between groups.
     (See function `scoreViz`)
 
-7.  **Gene Mapping for Variants**: Annotates all variants to genes,
-    highlighting their location in and around genes. (See function
-    `mapGene`)
+7.  **Gene Mapping for Variants**: Annotates all variants to located
+    HGNC gene names. (See function `mapGene`)
 
 8.  **Differential SNPs Analysis**: Performs differential gene
     expression analysis between assigned groups, ranking genes based on
@@ -117,16 +120,21 @@ various functions is illustrated below:
 
 The MissensePathoR package is authored by Jiaming Weng. The author wrote
 all the functions. All the functions depend on `data.table` package for
-data saving and reading, all the visualization functions (`classViz` and
-`scoreViz`) are powered by package `ggplot2` for graph generating and
-`RColorBrewer` for coloring.`readVCF` used `read.vcfR` in `vcfR` package
-to read and process vcf files, `readAlphaMissenseData` make use of the
-publicly available AlphaMissense dataset provided by Google Deepmind.The
-dependencies of the underconstructing gene-level analyses and shiny app
-functionalities will be specified later. ChatGPT4 is used to provide
-insights for debug and documentation, and write error checking for all
-the functions, its contribution is cited in the comments of the code as
-`# contributed by ChatGPT-4`.
+data saving and reading and `dplyr` package for data manipulation, all
+the visualization functions (`classViz`, `scoreViz`, and `pathwayViz`)
+are powered by package `ggplot2` for graph generating and `RColorBrewer`
+for coloring.`readVCF` used `read.vcfR` in `vcfR` package to read and
+process vcf files, `readAlphaMissenseData` make use of the publicly
+available AlphaMissense dataset provided by Google Deepmind. `mapGene`
+leverages the `UniProt.ws` package for mapping AlphaMissense predicted
+UniProt IDs to HGNC gene names. `diffSNPs` integrates the `edgeR` to
+perform counts-per-million(CPM) on pseudo gene counts and
+Quasi-Likelihood Model. `gprofiler2` package is used for thresholded
+over-representation analysis. The dependencies of the underconstructing
+gene-level analyses and shiny app functionalities will be specified
+later. ChatGPT4 is used to provide insights for debug and documentation,
+and write error checking for all the functions, its contribution is
+cited in the comments of the code as `# contributed by ChatGPT-4`.
 
 For the data:
 
@@ -141,12 +149,17 @@ For the data:
 
 ## References
 
+- Carlson M, Ramos M (2022). *UniProt.ws: R Interface to UniProt Web
+  Services*. R package version 2.38.1.
 - Cheng, J., Novati, G., Pan, J., Bycroft, C., Žemgulytė, A., Applebaum,
   T., Pritzel, A., Wong, L. H., Zielinski, M., Sargeant, T.,
   Schneider, R. G., Senior, A. W., Jumper, J., Hassabis, D., Kohli, P.,
   & Avsec, Ž. (2023). Accurate proteome-wide missense variant effect
   prediction with AlphaMissense. Science, 381(6664), eadg7492.
   <https://doi.org/10.1126/science.adg7492>
+- Chen, Y., Lun, A. T., McCarthy, D. J., Ritchie, M. E., Phipson, B.,
+  Hu, Y., … & Smyth, G. K. (2015). edgeR: Empirical analysis of digital
+  gene expression data in R. Bioconductor Version: Release (3.12).
 - Danecek, P., Auton, A., Abecasis, G., Albers, C. A., Banks, E.,
   DePristo, M. A., Handsaker, R. E., Lunter, G., Marth, G. T.,
   Sherry, S. T., McVean, G., & Durbin, R. (2011). The variant call
@@ -164,12 +177,20 @@ For the data:
   Miller, J. A. (2023). Interindividual variation in human cortical cell
   type abundance and expression. Science, 382(6667), eadf2359.
   <https://doi.org/10.1126/science.adf2359>
+- Kolberg L, Raudvere U, Kuzmin I, Vilo J, Peterson H (2020).
+  “gprofiler2- an R package for gene list functional enrichment analysis
+  and namespace conversion toolset g:Profiler.” *F1000Research*, *9
+  (ELIXIR)*(709). R package version 0.2.1.
 - Knaus BJ, Grünwald NJ (2017). “VCFR: a package to manipulate and
   visualize variant call format data in R.” *Molecular Ecology
   Resources*, *17*(1), 44-53. ISSN 757,
   <https://dx.doi.org/10.1111/1755-0998.12549>.
 - Neuwirth E (2022). *RColorBrewer: ColorBrewer Palettes*. R package
   version 1.1-3, <https://CRAN.R-project.org/package=RColorBrewer>.
+- Raudvere, Uku, Liis Kolberg, Ivan Kuzmin, Tambet Arak, Priit Adler,
+  Hedi Peterson, and Jaak Vilo. 2019. “G: Profiler: A Web Server for
+  Functional Enrichment Analysis and Conversions of Gene Lists (2019
+  Update).” Nucleic Acids Research 47 (W1): W191–98.
 - St»hle, L., & Wold, S. (1989). Analysis of variance (ANOVA).
   Chemometrics and Intelligent Laboratory Systems, 6(4), 259–272.
   <https://doi.org/10.1016/0169-7439(89)80095-4> Wang, K., Li, M., &
