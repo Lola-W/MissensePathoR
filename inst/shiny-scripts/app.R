@@ -1,4 +1,5 @@
 library(shiny)
+library(data.table)
 library(DT)  # Ensure DT is loaded for dataTableOutput
 library(MissensePathoR)
 
@@ -44,6 +45,8 @@ ui <- fluidPage(
                   tabPanel("Class Summary",
                            DT::dataTableOutput("classSummaryTable")),
                   tabPanel("Pathway Visualization",
+                           tags$p("Please wait for the result to complete, it could take up to some minutes."),
+                           br(),
                            selectInput("pathwayType", "Select Pathway Type:", choices = c("all significant genes"= "sig", "up-regulated genes" = "up", "down-regulated genes" = "down")),
                            plotOutput("pathwayPlot")))
     )
