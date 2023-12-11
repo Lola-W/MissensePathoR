@@ -64,8 +64,18 @@ Here, we demonstrate some typical applications of the package's functions using 
 The package comes with sample datasets (`vcfSample` for sample vcf files readed containing variants, `AlphaMissenseSample` for a small subset of AlphaMissense dataset, and `predScoreSample` for a dataset of annotated variants with predicted pathogenic class and score) that can be used to test and explore the features provided. Take `AlphaMissenseSample.rda` as an example, to load a sample dataset and see its structure, use the following commands:
 
 ``` r
-AlphaMissenseSample <- readRDS(system.file("extdata", "AlphaMissenseSample.rda", package = "MissensePathoR"))
+AlphaMissenseSample <- MissensePathoR::AlphaMissenseSample
 head(AlphaMissenseSample)
+```
+```
+# Expected Output
+   CHROM     POS REF ALT genome uniprot_id     transcript_id protein_variant am_pathogenicity      am_class
+1:  chr1  942451   T   C   hg38     Q96NU1 ENST00000342066.8           W343R           0.0292 likely_benign
+2:  chr1  942451   T   C   hg38     Q96NU1 ENST00000342066.8           W343R           0.0292 likely_benign
+3:  chr1  942451   T   C   hg38     Q96NU1 ENST00000342066.8           W343R           0.0292 likely_benign
+4:  chr1 1014228   G   A   hg38     P05161 ENST00000649529.1            S83N           0.0873 likely_benign
+5:  chr1 1014228   G   A   hg38     P05161 ENST00000649529.1            S83N           0.0873 likely_benign
+6:  chr1 1014228   G   A   hg38     P05161 ENST00000649529.1            S83N           0.0873 likely_benign
 ```
 
 ### Read VCF Files into a Data Table
@@ -89,12 +99,24 @@ Below is an example of how to use `readVCF` in conjunction with `createVCFDataFr
 # Define the path to VCF files
 vcf_files_path <- system.file("extdata", package = "MissensePathoR")
 
-# Create a DataFrame of VCF files, here the format of the vcf file is
-# ./inst/extdata/0h_Rep1.vcf
-vcf_df <- createVCFDataFrame(base_dir = vcf_files_path, , vcf_pattern = "*.vcf", , group_pattern = "([0-9]+)h", sample_pattern = "Rep([0-9]+)")
+# Helper function to create a DataFrame of VCF files, here the format of the vcf
+# file is ./inst/extdata/0h_Rep1.vcf, the groups are in format "([0-9]+)h".
+vcf_df <- createVCFDataFrame(vcf_files_path,"*.vcf","([0-9]+)h","Rep([0-9]+)")
 
 # Read and combine VCF data into a data.table
 vcf_data <- readVCF(vcf_df)
+head(vcf_data)
+```
+Warnings can be provided when the VCF file contains variants that are not single nucleotide polymorphisms (SNPs). They will be handled by automatically discard those variants.
+```
+# Expected Output
+   CHROM     POS   ID REF ALT    QUAL FILTER group sample_name
+1:  chr1  942335 <NA>   C   G 330.658   <NA>    0h        Rep1
+2:  chr1  942451 <NA>   T   C 330.055   <NA>    0h        Rep1
+3:  chr1  944296 <NA>   G   A 114.554   <NA>    0h        Rep1
+4:  chr1  952091 <NA>   G   A 675.217   <NA>    0h        Rep1
+5:  chr1  953259 <NA>   T   C 312.092   <NA>    0h        Rep1
+6:  chr1 1013493 <NA>   A   G 86.8186   <NA>    0h        Rep1
 ```
 
 ### Read AlphaMissense Data
@@ -110,14 +132,25 @@ The `readAlphaMissenseData` function in MissensePathoR retrieve and process pred
 
 #### Usage Example
 
-To use the full AlphaMissense dataset for hg38, download it from the official source (https://storage.googleapis.com/dm_alphamissense/AlphaMissense_hg38.tsv.gz) and specify the path. Please `gunzip */AlphaMissense_hg38.tsv.gz` in terminal before using it. Note the the unzipped dataset takes 5GB, ensure the designated directory have enough storage for it.
+To use the full AlphaMissense dataset for hg38, download it from the official source (https://storage.googleapis.com/dm_alphamissense/AlphaMissense_hg38.tsv.gz) and specify the path. Please `gunzip */AlphaMissense_hg38.tsv.gz` in terminal before using it. Note the the unzipped dataset takes 5GB, ensure the designated directory have enough storage for it. Warnings are provided when you use the demo data comes with the package.
 
 Below is an example demonstrating how to use `readAlphaMissenseData`:
 
 ```r
 # Load the demo dataset
 demo_data <- readAlphaMissenseData()
+head(demo_data)
 # full_data <- readAlphaMissenseData("path/to/AlphaMissense_hg38.tsv")
+```
+```
+# Expected Output
+   CHROM     POS REF ALT genome uniprot_id     transcript_id protein_variant am_pathogenicity      am_class
+1:  chr1  942451   T   C   hg38     Q96NU1 ENST00000342066.8           W343R           0.0292 likely_benign
+2:  chr1  942451   T   C   hg38     Q96NU1 ENST00000342066.8           W343R           0.0292 likely_benign
+3:  chr1  942451   T   C   hg38     Q96NU1 ENST00000342066.8           W343R           0.0292 likely_benign
+4:  chr1 1014228   G   A   hg38     P05161 ENST00000649529.1            S83N           0.0873 likely_benign
+5:  chr1 1014228   G   A   hg38     P05161 ENST00000649529.1            S83N           0.0873 likely_benign
+6:  chr1 1014228   G   A   hg38     P05161 ENST00000649529.1            S83N           0.0873 likely_benign
 ```
 
 ### Predict Pathogenicity Scores for VCF Data
@@ -141,6 +174,23 @@ Below is an example showcasing the use of `predictPathoScore`:
 prediction <- predictPathoScore(vcfSample, AlphaMissenseSample)
 head(prediction)
 ```
+```
+# Expected Output
+   CHROM    POS   ID REF ALT    QUAL FILTER group sample_name genome uniprot_id     transcript_id protein_variant am_pathogenicity
+1:  chr1 942451 <NA>   T   C 330.055   <NA>    0h        Rep1   hg38     Q96NU1 ENST00000342066.8           W343R           0.0292
+2:  chr1 942451 <NA>   T   C 896.756   <NA>    1h        Rep1   hg38     Q96NU1 ENST00000342066.8           W343R           0.0292
+3:  chr1 942451 <NA>   T   C 559.644   <NA>    1h        Rep2   hg38     Q96NU1 ENST00000342066.8           W343R           0.0292
+4:  chr1 942451 <NA>   T   C 330.055   <NA>    0h        Rep1   hg38     Q96NU1 ENST00000342066.8           W343R           0.0292
+5:  chr1 942451 <NA>   T   C 896.756   <NA>    1h        Rep1   hg38     Q96NU1 ENST00000342066.8           W343R           0.0292
+6:  chr1 942451 <NA>   T   C 559.644   <NA>    1h        Rep2   hg38     Q96NU1 ENST00000342066.8           W343R           0.0292
+        am_class
+1: likely_benign
+2: likely_benign
+3: likely_benign
+4: likely_benign
+5: likely_benign
+6: likely_benign
+```
 
 ### Tabular Summary of Class Distributions and Pathogenicity Scores
 
@@ -163,7 +213,13 @@ Here's how to use `classSummary` to get a summary of class distributions:
 summary <- classSummary(MissensePathoR::predScoreSample)
 print(summary)
 ```
-
+```
+# Expected Output
+  group ambiguous likely_benign likely_pathogenic
+  <chr>     <int>         <int>             <int>
+1 0h           41          1788                31
+2 1h           42          1887                44
+```
 
 #### Calculate Summary Pathogenicity Scores by Specified Category
 
@@ -186,6 +242,21 @@ print(group_summary)
 # Summary by sample name
 sample_summary <- scoreSummary(predScoreSample, category = "sample_name")
 print(sample_summary)
+```
+```
+# Expected Outputs
+> print(group_summary)
+# A tibble: 2 × 6
+  group mean_pathogenicity median_pathogenicity min_pathogenicity max_pathogenicity sd_pathogenicity
+  <chr>              <dbl>                <dbl>             <dbl>             <dbl>            <dbl>
+1 0h                 0.100               0.0679            0.0095             0.859            0.110
+2 1h                 0.103               0.0679            0.0095             0.888            0.117
+> print(sample_summary)
+# A tibble: 2 × 6
+  sample_name mean_pathogenicity median_pathogenicity min_pathogenicity max_pathogenicity sd_pathogenicity
+  <chr>                    <dbl>                <dbl>             <dbl>             <dbl>            <dbl>
+1 Rep1                     0.100               0.0678            0.0095             0.888            0.112
+2 Rep2                     0.103               0.0681            0.0095             0.859            0.115
 ```
 
 ### Visualize Proportions of Pathogenicity Classes
