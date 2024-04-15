@@ -16,7 +16,6 @@
 #'   classVis(predScoreSample, groups = c("0h", "1h"))
 #' }
 classVis <- function(data, groups = NULL) {
-  # Validate input data, contributed by ChatGPT-4
   if (!inherits(data, "data.table")) {
     stop("The input 'data' must be a data.table object.")
   }
@@ -29,23 +28,22 @@ classVis <- function(data, groups = NULL) {
   if (!is.null(groups) && !all(groups %in% data$group)) {
     stop("Not all specified groups are present in the 'group' column of the data table.")
   }
-
-  # Filter data for the specified groups if provided
   if (!is.null(groups)) {
     data <- data[group %in% groups]
   }
-
-  # Prepare summarized data
+  
+  data$am_class <- factor(data$am_class, levels = c("likely_pathogenic", "ambiguous", "likely_benign"))
   summarized_data <- data[, .(count = .N), by = .(group, am_class)]
-
-  # Plot
+  
   ggplot2::ggplot(summarized_data, aes(x = group, y = count, fill = am_class)) +
     geom_bar(stat = "identity", position = "stack", width = 0.7) +
-    theme_minimal(base_size = 14) +
+    theme_cowplot() +
     labs(title = "Distribution of Pathogenicity Classes Across Groups",
-         y = "Pathogenicity Class",
-         x = "Group") +
-    scale_fill_brewer(palette = "Set1", name = "Pathogenicity Class Category") +
+         y = "Pathogenicity Class", x = "Group") +
+    scale_fill_manual(values = c("likely_pathogenic" = "#ed1e24",
+                                 "ambiguous" = "#a8a9ad",
+                                 "likely_benign" = "#3853a4"),
+                      name = "Pathogenicity Class Category") +
     theme(legend.position = "right",
           legend.justification = c(1, 0),
           legend.background = element_rect(fill = "white", colour = "black"),
